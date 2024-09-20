@@ -41,5 +41,5 @@ services:
       - PMA_HOST=painel-db
       - PMA_PORT=3306
     volumes:
-      - ./.htpasswd:/etc/httpd/.htpasswd
+      - .htpasswd:/etc/httpd/.htpasswd
       - ./extra/apache2-conf/apache-security.conf:/etc/apache2/conf-enabled/apache-security.conf
