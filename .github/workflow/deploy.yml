@@ -1,0 +1,53 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main  # Dispara o deploy apenas quando há push na branch "main"
+env:
+  WORKDIR: /root/minicurso-phpday-ifpi
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Configura a chave SSH para o acesso ao servidor VPS
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Copia os arquivos atualizados para o servidor VPS
+      - name: Copy Files to VPS
+        run: |
+          rsync -avz --exclude='vendor/' --exclude='node_modules/' ./ root@206.189.224.59:$WORKDIR
+
+      # Gera o arquivo .environment no VPS com as variáveis de secrets do repositório
+      - name: Generate .environment file on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no root@206.189.224.59 << 'EOF'
+            cd $WORKDIR
+            cat > .environment <<EOL
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            EOL
+          EOF
+
+      # Executa os comandos no servidor VPS
+      - name: Deploy Application on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no root@206.189.224.59 << 'EOF'
+            cd $WORKDIR
+            # Atualiza a imagem Docker e executa o docker-compose
+            docker-compose -f docker-compose-prod.yml --env-file ./environment build --no-cache
+            docker compose -f docker-compose-prod.yml --env-file ./environment up -d
+            # Limpa imagens antigas e volumes não utilizados
+            docker system prune -f
+          EOF

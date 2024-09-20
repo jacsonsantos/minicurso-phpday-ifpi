@@ -1,0 +1,39 @@
+version: '3'
+services:
+  painel:
+    build: .
+    ports:
+      - 80:80
+      - 8000:8000
+    volumes:
+      - ./:/var/www
+      - ./public:/var/www/html
+    # user: "1001:1001"
+    command: ['apachectl', '-D', 'FOREGROUND']
+
+  painel-db:
+    image: mysql:5.7
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    ports:
+      - 3306/tcp
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aniversariodb
+      MYSQL_PASSWORD: root
+  
+  phpmyadmin:
+    depends_on: 
+      - painel-db
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOST=painel-db
+      - PMA_PORT=3306
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1025
+      - 8025:8025

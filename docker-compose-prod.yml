@@ -1,0 +1,45 @@
+services:
+  painel:
+    build:
+      dockerfile: ./extra/Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - painel-db
+    depends_on:
+      - painel-db
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt
+      - ./storage:/var/www/storage
+
+  painel-db:
+    image: mysql:5.7
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    ports:
+      - 3306/tcp
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  phpmyadmin:
+    links:
+      - painel-db
+    depends_on: 
+      - painel-db
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOST=painel-db
+      - PMA_PORT=3306
+    volumes:
+      - ./.htpasswd:/etc/httpd/.htpasswd
+      - ./extra/apache2-conf/apache-security.conf:/etc/apache2/conf-enabled/apache-security.conf

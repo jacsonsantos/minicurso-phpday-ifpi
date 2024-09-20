@@ -1,0 +1,4 @@
+vendor/
+mysql-data/
+storage/
+docker-compose.yml
