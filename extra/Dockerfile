@@ -35,6 +35,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&\
     apt install -y nodejs
 ## Installing Yarn
 RUN npm install --global yarn
+RUN npm install
+RUN npm run build
 ## Apache2
 COPY extra/apache2-conf/00-aniversario-app.conf /etc/apache2/sites-available/
 # COPY extra/apache2-conf/00-aniversario-app-le-ssl.conf /etc/apache2/sites-available/
