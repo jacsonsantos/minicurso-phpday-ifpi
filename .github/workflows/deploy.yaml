@@ -51,8 +51,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
             cd $WORKDIR
             # Atualiza a imagem Docker e executa o docker-compose
-            docker compose -f docker-compose-prod.yml --env-file ./environment build --no-cache
-            docker compose -f docker-compose-prod.yml --env-file ./environment up -d
+            docker compose -f $WORKDIR/docker-compose-prod.yml --env-file $WORKDIR/environment build --no-cache
+            docker compose -f $WORKDIR/docker-compose-prod.yml --env-file $WORKDIR/environment up -d
             # Limpa imagens antigas e volumes não utilizados
             docker system prune -f
           EOF
