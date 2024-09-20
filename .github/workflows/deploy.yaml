@@ -6,6 +6,7 @@ on:
       - main  # Dispara o deploy apenas quando há push na branch "main"
 env:
   WORKDIR: /root/minicurso-phpday-ifpi
+  VPS_IP: 206.189.224.59
 
 jobs:
   deploy:
@@ -22,15 +23,19 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Copia os arquivos atualizados para o servidor VPS
+      - name: Add VPS to known_hosts
+        run: |
+          ssh-keyscan -H $VPS_IP >> ~/.ssh/known_hosts
+
       - name: Copy Files to VPS
         run: |
-          rsync -avz --exclude='vendor/' --exclude='node_modules/' ./ root@206.189.224.59:$WORKDIR
+          rsync -avz --exclude='vendor/' --exclude='node_modules/' ./ root@$VPS_IP:$WORKDIR
+
 
       # Gera o arquivo .environment no VPS com as variáveis de secrets do repositório
       - name: Generate .environment file on VPS
         run: |
-          ssh -o StrictHostKeyChecking=no root@206.189.224.59 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
             cd $WORKDIR
             cat > .environment <<EOL
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -43,7 +48,7 @@ jobs:
       # Executa os comandos no servidor VPS
       - name: Deploy Application on VPS
         run: |
-          ssh -o StrictHostKeyChecking=no root@206.189.224.59 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
             cd $WORKDIR
             # Atualiza a imagem Docker e executa o docker-compose
             docker-compose -f docker-compose-prod.yml --env-file ./environment build --no-cache
