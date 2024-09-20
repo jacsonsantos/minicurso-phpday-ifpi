@@ -55,4 +55,5 @@ jobs:
             docker compose -f docker-compose-prod.yml --env-file ./environment up -d
             # Limpa imagens antigas e volumes não utilizados
             docker system prune -f
+            chmod -R 777 storage
           EOF
