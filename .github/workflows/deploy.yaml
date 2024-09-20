@@ -36,7 +36,7 @@ jobs:
       - name: Generate environment file on VPS
         run: |
           ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
-            cd $WORKDIR
+            cd /root/minicurso-phpday-ifpi
             cat > environment <<EOL
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
@@ -49,10 +49,10 @@ jobs:
       - name: Deploy Application on VPS
         run: |
           ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
-            cd $WORKDIR
+            cd /root/minicurso-phpday-ifpi
             # Atualiza a imagem Docker e executa o docker-compose
-            docker compose -f $WORKDIR/docker-compose-prod.yml --env-file ./environment build --no-cache
-            docker compose -f $WORKDIR/docker-compose-prod.yml --env-file ./environment up -d
+            docker compose -f docker-compose-prod.yml --env-file ./environment build --no-cache
+            docker compose -f docker-compose-prod.yml --env-file ./environment up -d
             # Limpa imagens antigas e volumes não utilizados
             docker system prune -f
           EOF
