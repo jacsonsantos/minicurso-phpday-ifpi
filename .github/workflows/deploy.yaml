@@ -32,12 +32,12 @@ jobs:
           rsync -avz --exclude='vendor/' --exclude='node_modules/' ./ root@$VPS_IP:$WORKDIR
 
 
-      # Gera o arquivo .environment no VPS com as variáveis de secrets do repositório
-      - name: Generate .environment file on VPS
+      # Gera o arquivo environment no VPS com as variáveis de secrets do repositório
+      - name: Generate environment file on VPS
         run: |
           ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
             cd $WORKDIR
-            cat > .environment <<EOL
+            cat > environment <<EOL
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
             MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
             MYSQL_USER=${{ secrets.MYSQL_USER }}
@@ -51,7 +51,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@$VPS_IP << 'EOF'
             cd $WORKDIR
             # Atualiza a imagem Docker e executa o docker-compose
-            docker-compose -f docker-compose-prod.yml --env-file ./environment build --no-cache
+            docker compose -f docker-compose-prod.yml --env-file ./environment build --no-cache
             docker compose -f docker-compose-prod.yml --env-file ./environment up -d
             # Limpa imagens antigas e volumes não utilizados
             docker system prune -f
